@@ -1,7 +1,41 @@
 {% extends "base.html" %}
 {% block title %}Collaborators | DSAWebLectures{% endblock %}
+{% block styles %}
+<style>
+  #bg-grid {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    display: grid;
+    transform: translate(-50%, -50%);
+    z-index: -10;
+    pointer-events: none;
+  }
 
+  .grid-cell {
+    width: 30px;
+    height: 30px;
+    background: #0a1a3a;
+    transition: background 0.12s linear;
+  }
+
+  .grid-cell.active {
+    background: #1e90ff;
+  }
+
+  @keyframes cellPulse {
+    0% { background: #1e90ff; }
+    100% { background: #0a1a3a; }
+  }
+
+  .grid-cell.pulse {
+    animation: cellPulse 0.4s forwards;
+  }
+</style>
+{% endblock styles %}
 {% block content %}
+<div id="bg-grid"></div>
+
 <main class="collaborators-page">
   <section class="collab-hero">
     <h2>Our Collaborators</h2>
@@ -10,27 +44,33 @@
 
   <section class="collab-grid">
     <button id="btn-lead-engineer" class="collab-btn">Lead Engineer</button>
-    <button id="btn-senior-developer" class="collab-btn">Senior Developer</button>
-    <button id="btn-junior-developer" class="collab-btn">Junior Developer</button>
+    <button id="btn-frontend-developer" class="collab-btn">Frontend Developer</button>
+    <button id="btn-backend-developer" class="collab-btn">Backend Developer</button>
     <button id="btn-db-engineer" class="collab-btn">DB Engineer</button>
     <button id="btn-graphics-designer" class="collab-btn">Graphics Designer</button>
     <button id="btn-manager" class="collab-btn">Manager</button>
+    <button id="btn-tester" class="collab-btn">Tester</button>
   </section>
 
   <!-- Collaborator Modals -->
   <div id="collab-modals">
     {% set collaborators = [
-      {'id':'lead-engineer','role':'Lead Engineer','name':'Earl Jhon D. Dimla','student_id':'2024-03779-MN-0','github':'Earl-cmyk'},
-      {'id':'senior-developer','role':'Senior Developer','name':'Placeholder 2','student_id':'2024-00000-MN-2','github':'placeholder2'},
-      {'id':'junior-developer','role':'Junior Developer','name':'Placeholder 3','student_id':'2024-00000-MN-3','github':'placeholder3'},
-      {'id':'db-engineer','role':'DB Engineer','name':'Placeholder 4','student_id':'2024-00000-MN-4','github':'placeholder4'},
-      {'id':'graphics-designer','role':'Graphics Designer','name':'Placeholder 5','student_id':'2024-00000-MN-5','github':'placeholder5'},
-      {'id':'manager','role':'Manager','name':'Placeholder 6','student_id':'2024-00000-MN-6','github':'placeholder6'}
+      {'id':'lead-engineer','role':'Lead Engineer','name':'Earl Jhon D. Dimla','student_id':'2024-03779-MN-0','github':'Earl-cmyk','avatar':'earl.jpg'},
+      {'id':'frontend-developer','role':'Frontend Developer','name':'Placeholder 2','student_id':'2024-00000-MN-2','github':'placeholder2','avatar':'placeholder2.jpg'},
+      {'id':'backend-developer','role':'Backend Developer','name':'Placeholder 3','student_id':'2024-00000-MN-3','github':'placeholder3','avatar':'placeholder3.jpg'},
+      {'id':'db-engineer','role':'DB Engineer','name':'Placeholder 4','student_id':'2024-00000-MN-4','github':'placeholder4','avatar':'bert.jpg'},
+      {'id':'graphics-designer','role':'Graphics Designer','name':'Placeholder 5','student_id':'2024-00000-MN-5','github':'placeholder5','avatar':'franzen.jpg'},
+      {'id':'manager','role':'Manager','name':'Placeholder 6','student_id':'2024-00000-MN-6','github':'placeholder6','avatar':'placeholder6.jpg'},
+      {'id':'tester','role':'Tester','name':'Brent Malik Liongson','student_id':'secret','github':'Asphyro','avatar':'brent.jpg'}
     ] %}
     {% for c in collaborators %}
     <div id="card-{{ c.id }}" class="collab-card modal" aria-hidden="true">
       <div class="modal-content">
-        <img src="{{ url_for('static', filename='img/avatar_placeholder.png') }}" alt="Avatar" class="avatar" />
+        <img
+          src="{{ url_for('static', filename='img/' ~ (c.avatar if c.avatar else 'avatar_placeholder.jpg')) }}"
+          alt="{{ c.name }} Avatar"
+          class="avatar"
+        />
         <h3>{{ c.role }}</h3>
         <p><strong>Name:</strong> {{ c.name }}</p>
         <p><strong>Student ID:</strong> {{ c.student_id }}</p>
@@ -47,8 +87,8 @@
 {% block scripts %}
 <script>
   const buttons = [
-    'lead-engineer','senior-developer','junior-developer',
-    'db-engineer','graphics-designer','manager'
+    'lead-engineer','frontend-developer','backend-developer',
+    'db-engineer','graphics-designer','manager','tester'
   ];
 
   buttons.forEach(id => {
@@ -74,5 +114,56 @@
       });
     });
   });
+    // GRID BACKGROUND EFFECT
+document.addEventListener("DOMContentLoaded", () => {
+  const grid = document.getElementById("bg-grid");
+  const cellSize = 30;
+
+  function createGrid() {
+    grid.innerHTML = "";
+    const cols = Math.ceil(window.innerWidth / cellSize) + 2;
+    const rows = Math.ceil(window.innerHeight / cellSize) + 2;
+
+    grid.style.gridTemplateColumns = `repeat(${cols}, ${cellSize}px)`;
+    grid.style.width = `${cols * cellSize}px`;
+    grid.style.height = `${rows * cellSize}px`;
+
+    const total = cols * rows;
+    for (let i = 0; i < total; i++) {
+      const cell = document.createElement("div");
+      cell.classList.add("grid-cell");
+      grid.appendChild(cell);
+    }
+
+    return { cols, rows, cells: Array.from(grid.children) };
+  }
+
+  let { cols, rows, cells } = createGrid();
+
+  function pulseCell(col, row) {
+    if (col < 0 || row < 0 || col >= cols || row >= rows) return;
+    const idx = row * cols + col;
+    const cell = cells[idx];
+    if (!cell) return;
+    cell.classList.add("active", "pulse");
+    setTimeout(() => cell.classList.remove("active"), 120);
+    setTimeout(() => cell.classList.remove("pulse"), 400);
+  }
+
+  window.addEventListener("mousemove", e => {
+    const rect = grid.getBoundingClientRect();
+    const col = Math.floor((e.clientX - rect.left) / cellSize);
+    const row = Math.floor((e.clientY - rect.top) / cellSize);
+
+    for (let dx = -1; dx <= 1; dx++)
+      for (let dy = -1; dy <= 1; dy++)
+        pulseCell(col + dx, row + dy);
+  });
+
+  window.addEventListener("resize", () => {
+    ({ cols, rows, cells } = createGrid());
+  });
+});
+
 </script>
 {% endblock %}

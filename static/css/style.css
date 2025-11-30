@@ -175,7 +175,7 @@ body {
 
 .post-card {
   position: relative;
-  background: linear-gradient(180deg, var(--panel), var(--glass-2));
+  background: #000124;
   padding: 1rem;
   border-radius: var(--card-radius);
   margin-bottom: 1rem;
@@ -204,7 +204,7 @@ body {
 /* ===================== FOOTER ACTIONS ===================== */
 .post-card footer { display: flex; gap: .5rem; }
 .post-card button {
-  background: transparent;
+  background: #000080;
   border: 1px solid rgba(255,255,255,0.03);
   padding: .35rem .6rem;
   border-radius: 8px;
@@ -453,4 +453,33 @@ a:focus, button:focus, input:focus, textarea:focus {
 
 .preserve {
   white-space: pre-wrap;
+}
+
+.avatar {
+  width: 65px;
+  height: 65px;
+  border-radius: 50%;
+  object-fit: cover;
+  overflow: hidden;
+  border: 2px solid var(--accent); /* optional */
+}
+
+html, body {
+  height: 100%;
+  margin: 0;
+}
+
+.page-wrapper {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.main-content {
+  flex: 1;
+}
+
+footer{
+    background: transparent;
+    padding: 1rem 0;
 }
