@@ -444,6 +444,125 @@ def bst_insert(node, val):
     return node
 
 # ----------------------
+# MANUAL BINARY TREE
+# ----------------------
+bt_root = None
+
+def render_binary_tree_svg(root):
+    if not root:
+        return '<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="400"></svg>'
+
+    parts = ['<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="500">']
+
+    def walk(node, x, y, spread):
+        if not node:
+            return
+
+        if node.left:
+            parts.append(f'<line x1="{x}" y1="{y}" x2="{x-spread}" y2="{y+100}" stroke="white"/>')
+            walk(node.left, x-spread, y+100, spread//2)
+
+        if node.right:
+            parts.append(f'<line x1="{x}" y1="{y}" x2="{x+spread}" y2="{y+100}" stroke="white"/>')
+            walk(node.right, x+spread, y+100, spread//2)
+
+        parts.append(f'<circle cx="{x}" cy="{y}" r="25" fill="#ff6b6b" stroke="white"/>')
+        parts.append(f'<text x="{x}" y="{y+6}" text-anchor="middle" font-size="18" fill="black">{escape_text(node.val)}</text>')
+
+    walk(root, 500, 50, 200)
+    parts.append('</svg>')
+    return "".join(parts)
+
+@app.route("/bt/add-left", methods=["POST"])
+def bt_add_left():
+    global bt_root
+    val = request.json.get("value", "").strip()
+    if not val:
+        return jsonify({"ok": False})
+
+    if not bt_root:
+        bt_root = TreeNode(val)
+    else:
+        if not bt_root.left:
+            bt_root.left = TreeNode(val)
+
+    return jsonify({"ok": True, "svg": render_binary_tree_svg(bt_root)})
+
+
+@app.route("/bt/add-right", methods=["POST"])
+def bt_add_right():
+    global bt_root
+    val = request.json.get("value", "").strip()
+    if not val:
+        return jsonify({"ok": False})
+
+    if not bt_root:
+        bt_root = TreeNode(val)
+    else:
+        if not bt_root.right:
+            bt_root.right = TreeNode(val)
+
+    return jsonify({"ok": True, "svg": render_binary_tree_svg(bt_root)})
+
+
+@app.route("/bt/reset", methods=["POST"])
+def bt_reset():
+    global bt_root
+    bt_root = None
+    return jsonify({"ok": True, "svg": render_binary_tree_svg(bt_root)})
+
+def bst_search(node, val):
+    if not node:
+        return False
+    if node.val == val:
+        return True
+    elif val < node.val:
+        return bst_search(node.left, val)
+    else:
+        return bst_search(node.right, val)
+
+
+def bst_find_max(node):
+    if not node:
+        return None
+    while node.right:
+        node = node.right
+    return node.val
+
+
+def bst_height(node):
+    if not node:
+        return 0
+    return 1 + max(bst_height(node.left), bst_height(node.right))
+
+
+def bst_delete(node, val):
+    if not node:
+        return None
+
+    if val < node.val:
+        node.left = bst_delete(node.left, val)
+    elif val > node.val:
+        node.right = bst_delete(node.right, val)
+    else:
+        # ✅ Case 1: No child
+        if not node.left and not node.right:
+            return None
+
+        # ✅ Case 2: One child
+        if not node.left:
+            return node.right
+        if not node.right:
+            return node.left
+
+        # ✅ Case 3: Two children
+        temp = bst_find_max(node.left)
+        node.val = temp
+        node.left = bst_delete(node.left, temp)
+
+    return node
+
+# ----------------------
 # Routes
 # ----------------------
 # Queue endpoints
@@ -514,6 +633,45 @@ def bst_insert_route():
     except:
         return jsonify({"ok": False, "error": "numeric only"})
     bst_root = bst_insert(bst_root, num)
+    return jsonify({"ok": True, "svg": render_generic_tree_svg(bst_root)})
+
+@app.route("/bst/search", methods=["POST"])
+def bst_search_route():
+    global bst_root
+    val = request.json.get("value")
+    try:
+        num = int(val)
+    except:
+        return jsonify({"ok": False})
+
+    found = bst_search(bst_root, num)
+    return jsonify({"ok": True, "found": found})
+
+
+@app.route("/bst/max", methods=["GET"])
+def bst_max_route():
+    global bst_root
+    m = bst_find_max(bst_root)
+    return jsonify({"ok": True, "max": m})
+
+
+@app.route("/bst/height", methods=["GET"])
+def bst_height_route():
+    global bst_root
+    h = bst_height(bst_root)
+    return jsonify({"ok": True, "height": h})
+
+
+@app.route("/bst/delete", methods=["POST"])
+def bst_delete_route():
+    global bst_root
+    val = request.json.get("value")
+    try:
+        num = int(val)
+    except:
+        return jsonify({"ok": False})
+
+    bst_root = bst_delete(bst_root, num)
     return jsonify({"ok": True, "svg": render_generic_tree_svg(bst_root)})
 
 # RUN

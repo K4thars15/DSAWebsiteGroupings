@@ -56,7 +56,18 @@ body {
   color: #022030;
   box-shadow: 0 6px 18px rgba(56,189,248,0.12);
 }
+
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 22px rgba(56,189,248,0.18);
+}
+
 .btn-ghost { border: 1px solid rgba(255,255,255,0.04); }
+.btn-ghost:hover {
+  background: var(--glass-2);
+  box-shadow: 0 8px 22px rgba(56,189,248,0.18);
+  transform: translateY(-2px);
+}
 
 /* ===================== SCROLLBAR ===================== */
 ::-webkit-scrollbar { width: 10px; height: 10px; }
@@ -67,6 +78,16 @@ body {
   border: 2px solid #0f1724;
 }
 ::-webkit-scrollbar-thumb:hover { background-color: #777; }
+
+.copy-btn {
+  background: linear-gradient(180deg, var(--accent), #2fb4e6);
+  color: #022030;
+  box-shadow: 0 6px 18px rgba(56,189,248,0.12);
+}
+
+.close-btn {
+  border: 1px solid rgba(255,255,255,0.04)
+}
 
 /* ===================== LAYOUT ===================== */
 .container {
@@ -173,6 +194,34 @@ body {
   padding-right: 6px;
 }
 
+#post-form {
+    display: flex;
+    flex-direction: column;
+  }
+
+#post-form label {
+    font-weight: bold;
+    margin-bottom: 4px;
+    margin-top: 4px;
+    color: #38bdf8;
+  }
+
+#post-title-input, #post-author-input {
+    width: 30%;
+    min-width: 100px;
+  }
+
+#post-form select[name="post_type"] {
+  width: 10%;
+  min-width: 100px;
+  }
+
+#post-form input, #post-form textarea, #post-form select {
+    background: #000124;
+    color: white;
+    border: 1px solid #38bdf8;
+  }
+
 .post-card {
   position: relative;
   background: #000124;
@@ -264,6 +313,11 @@ body {
   align-items: center;
   justify-content: center;
 }
+
+#modal-title {
+  text-align: center;
+}
+
 .modal-content {
   max-width: 720px;
   width: 100%;
@@ -335,6 +389,13 @@ body {
   transform: translateY(0);
   box-shadow: 0 3px 8px rgba(2,111,253,0.3);
 }
+
+.collab-hero {
+  text-align: center;
+  margin-bottom: 1.5rem;
+}
+.collab-hero h2 { font-size: 2rem; margin: 0;}
+
 @media (max-width: 500px) {
   .collab-btn {
     font-size: 0.85rem;

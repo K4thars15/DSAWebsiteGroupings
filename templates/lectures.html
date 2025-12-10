@@ -2,18 +2,14 @@
 {% block styles %}
 <style>
     #bg-grid {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100vw;
-      height: 100vh;
-      display: grid;
-      grid-template-columns: repeat(auto-fill, 30px);
-      grid-auto-rows: 30px;
-      z-index: -9999; /* push fully behind */
-      pointer-events: none;
-      transform: none;
-    }
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    display: grid;
+    transform: translate(-50%, -50%);
+    z-index: -10;
+    pointer-events: none;
+  }
 
   .grid-cell {
     width: 30px;
@@ -130,11 +126,18 @@
       <p class="post-caption">Insert values into a Binary Search Tree.</p>
     </header>
 
-    <div style="margin:10px 0;">
-      <input id="bst-input" type="text" placeholder="Insert value…" />
-      <button id="bst-insert">Insert</button>
-      <button id="bst-reset">Reset</button>
-    </div>
+<div style="margin:10px 0;">
+  <input id="bst-input" type="text" placeholder="Insert / Search / Delete…" />
+  <button id="bst-insert">Insert</button>
+  <button id="bst-delete">Delete</button>
+  <button id="bst-search">Search</button>
+  <button id="bst-max">Max Value</button>
+  <button id="bst-height">Height</button>
+  <button id="bst-reset">Reset</button>
+</div>
+
+<div id="bst-info" style="margin-top:10px;font-weight:bold;"></div>
+
 
     <div id="bst-display" style="padding:10px;border:1px solid #ccc;">
       <svg id="bst-svg" width="1000" height="600"></svg>
@@ -279,7 +282,222 @@ document.querySelectorAll('.edit-post').forEach(btn => {
   });
 });
 
+    /* ============================= */
+/* QUEUE DEMO                    */
+/* ============================= */
+document.getElementById("queue-enqueue").onclick = async () => {
+  const val = document.getElementById("queue-input").value;
 
+  const res = await fetch("/queue/enqueue", {
+    method: "POST",
+    headers: {"Content-Type": "application/json"},
+    body: JSON.stringify({ value: val })
+  });
+
+  const data = await res.json();
+  if (data.svg) document.getElementById("queue-display").innerHTML = data.svg;
+};
+
+document.getElementById("queue-dequeue").onclick = async () => {
+  const res = await fetch("/queue/dequeue", { method: "POST" });
+  const data = await res.json();
+  if (data.svg) document.getElementById("queue-display").innerHTML = data.svg;
+};
+
+
+/* ============================= */
+/* STACK DEMO                    */
+/* ============================= */
+document.getElementById("stack-push").onclick = async () => {
+  const val = document.getElementById("stack-input").value;
+
+  const res = await fetch("/stack/push", {
+    method: "POST",
+    headers: {"Content-Type": "application/json"},
+    body: JSON.stringify({ value: val })
+  });
+
+  const data = await res.json();
+  if (data.svg) document.getElementById("stack-display").innerHTML = data.svg;
+};
+
+document.getElementById("stack-pop").onclick = async () => {
+  const res = await fetch("/stack/pop", { method: "POST" });
+  const data = await res.json();
+  if (data.svg) document.getElementById("stack-display").innerHTML = data.svg;
+};
+
+
+/* ============================= */
+/* GENERIC TREE DEMO             */
+/* ============================= */
+document.getElementById("tree-add-root").onclick = async () => {
+  const val = document.getElementById("tree-input").value;
+
+  const res = await fetch("/tree/insert", {
+    method: "POST",
+    headers: {"Content-Type": "application/json"},
+    body: JSON.stringify({ value: val })
+  });
+
+  const data = await res.json();
+  if (data.svg) document.getElementById("tree-display").innerHTML = data.svg;
+};
+
+document.getElementById("tree-add-child").onclick =
+document.getElementById("tree-add-root").onclick;
+
+
+/* ============================= */
+/* BINARY TREE DEMO              */
+/* ============================= */
+document.getElementById("bt-add-left").onclick = async () => {
+  const val = document.getElementById("bt-input").value;
+
+  const res = await fetch("/bt/add-left", {
+    method: "POST",
+    headers: {"Content-Type": "application/json"},
+    body: JSON.stringify({ value: val })
+  });
+
+  const data = await res.json();
+  if (data.svg) document.getElementById("bt-display").innerHTML = data.svg;
+};
+
+document.getElementById("bt-add-right").onclick = async () => {
+  const val = document.getElementById("bt-input").value;
+
+  const res = await fetch("/bt/add-right", {
+    method: "POST",
+    headers: {"Content-Type": "application/json"},
+    body: JSON.stringify({ value: val })
+  });
+
+  const data = await res.json();
+  if (data.svg) document.getElementById("bt-display").innerHTML = data.svg;
+};
+
+document.getElementById("bt-reset").onclick = async () => {
+  const res = await fetch("/bt/reset", { method: "POST" });
+  const data = await res.json();
+  if (data.svg) document.getElementById("bt-display").innerHTML = data.svg;
+};
+
+
+/* ============================= */
+/* BST DEMO                      */
+/* ============================= */
+document.getElementById("bst-insert").onclick = async () => {
+  const val = document.getElementById("bst-input").value;
+
+  const res = await fetch("/bst/insert", {
+    method: "POST",
+    headers: {"Content-Type": "application/json"},
+    body: JSON.stringify({ value: val })
+  });
+
+  const data = await res.json();
+  if (data.svg) document.getElementById("bst-display").innerHTML = data.svg;
+};
+
+document.getElementById("bst-reset").onclick = () => {
+  document.getElementById("bst-display").innerHTML = "";
+};
+
+    document.getElementById("bst-delete").onclick = async () => {
+  const val = document.getElementById("bst-input").value;
+
+  const res = await fetch("/bst/delete", {
+    method: "POST",
+    headers: {"Content-Type": "application/json"},
+    body: JSON.stringify({ value: val })
+  });
+
+  const data = await res.json();
+  if (data.svg) document.getElementById("bst-display").innerHTML = data.svg;
+};
+
+
+document.getElementById("bst-search").onclick = async () => {
+  const val = document.getElementById("bst-input").value;
+
+  const res = await fetch("/bst/search", {
+    method: "POST",
+    headers: {"Content-Type": "application/json"},
+    body: JSON.stringify({ value: val })
+  });
+
+  const data = await res.json();
+  document.getElementById("bst-info").innerText =
+    data.found ? "✅ Value Found" : "❌ Not Found";
+};
+
+
+document.getElementById("bst-max").onclick = async () => {
+  const res = await fetch("/bst/max");
+  const data = await res.json();
+  document.getElementById("bst-info").innerText =
+    "Max Value: " + data.max;
+};
+
+
+document.getElementById("bst-height").onclick = async () => {
+  const res = await fetch("/bst/height");
+  const data = await res.json();
+  document.getElementById("bst-info").innerText =
+    "Tree Height: " + data.height;
+};
+
+// GRID BACKGROUND EFFECT
+document.addEventListener("DOMContentLoaded", () => {
+  const grid = document.getElementById("bg-grid");
+  const cellSize = 30;
+
+  function createGrid() {
+    grid.innerHTML = "";
+    const cols = Math.ceil(window.innerWidth / cellSize) + 2;
+    const rows = Math.ceil(window.innerHeight / cellSize) + 2;
+
+    grid.style.gridTemplateColumns = `repeat(${cols}, ${cellSize}px)`;
+    grid.style.width = `${cols * cellSize}px`;
+    grid.style.height = `${rows * cellSize}px`;
+
+    const total = cols * rows;
+    for (let i = 0; i < total; i++) {
+      const cell = document.createElement("div");
+      cell.classList.add("grid-cell");
+      grid.appendChild(cell);
+    }
+
+    return { cols, rows, cells: Array.from(grid.children) };
+  }
+
+  let { cols, rows, cells } = createGrid();
+
+  function pulseCell(col, row) {
+    if (col < 0 || row < 0 || col >= cols || row >= rows) return;
+    const idx = row * cols + col;
+    const cell = cells[idx];
+    if (!cell) return;
+    cell.classList.add("active", "pulse");
+    setTimeout(() => cell.classList.remove("active"), 120);
+    setTimeout(() => cell.classList.remove("pulse"), 400);
+  }
+
+  window.addEventListener("mousemove", e => {
+    const rect = grid.getBoundingClientRect();
+    const col = Math.floor((e.clientX - rect.left) / cellSize);
+    const row = Math.floor((e.clientY - rect.top) / cellSize);
+
+    for (let dx = -1; dx <= 1; dx++)
+      for (let dy = -1; dy <= 1; dy++)
+        pulseCell(col + dx, row + dy);
+  });
+
+  window.addEventListener("resize", () => {
+    ({ cols, rows, cells } = createGrid());
+  });
+});
 </script>
 
 {% endblock %}
