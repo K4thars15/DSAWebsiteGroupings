@@ -1,0 +1,289 @@
+{% extends "base.html" %}
+{% block styles %}
+<style>
+    #bg-grid {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      display: grid;
+      grid-template-columns: repeat(auto-fill, 30px);
+      grid-auto-rows: 30px;
+      z-index: -9999; /* push fully behind */
+      pointer-events: none;
+      transform: none;
+    }
+
+  .grid-cell {
+    width: 30px;
+    height: 30px;
+    background: #0a1a3a;
+    transition: background 0.12s linear;
+  }
+
+  .grid-cell.active {
+    background: #1e90ff;
+  }
+
+  @keyframes cellPulse {
+    0% { background: #1e90ff; }
+    100% { background: #0a1a3a; }
+  }
+
+  .grid-cell.pulse {
+    animation: cellPulse 0.4s forwards;
+  }
+
+  #btn-create-post {
+    text-align: center;
+  }
+</style>
+{% endblock styles %}
+
+{% block content %}
+<div id="bg-grid"></div>
+
+<main class="lectures-page">
+  <section class="lectures-header">
+    <button id="btn-create-post" class="btn btn-primary" aria-haspopup="dialog">Create a Post</button>
+  </section>
+<section id="posts-list">
+
+  <!-- ========================= -->
+  <!-- INTERACTIVE DEMOS (ONLY ONCE) -->
+  <!-- ========================= -->
+
+  <!-- QUEUE DEMO -->
+  <article class="post-card">
+    <header>
+      <h3 class="post-title">Queue Interactive Demo</h3>
+      <p class="post-caption">Visualize enqueue and dequeue operations in real time.</p>
+    </header>
+
+    <div style="margin:10px 0;">
+      <input id="queue-input" type="text" placeholder="Value…" />
+      <button id="queue-enqueue">Enqueue</button>
+      <button id="queue-dequeue">Dequeue</button>
+    </div>
+
+    <div id="queue-display" style="padding:10px;border:1px solid #ccc;">
+      <svg id="queue-svg" width="1000" height="400"></svg>
+    </div>
+  </article>
+
+  <!-- STACK DEMO -->
+  <article class="post-card">
+    <header>
+      <h3 class="post-title">Stack Interactive Demo</h3>
+      <p class="post-caption">Push and pop to see how LIFO works.</p>
+    </header>
+
+    <div style="margin:10px 0;">
+      <input id="stack-input" type="text" placeholder="Value…" />
+      <button id="stack-push">Push</button>
+      <button id="stack-pop">Pop</button>
+    </div>
+
+    <div id="stack-display" style="padding:10px;border:1px solid #ccc;">
+      <svg id="stack-svg" width="200" height="400"></svg>
+    </div>
+  </article>
+
+  <!-- TREE DEMO -->
+  <article class="post-card">
+    <header>
+      <h3 class="post-title">Tree (General) Interactive Demo</h3>
+      <p class="post-caption">Add children to selected nodes.</p>
+    </header>
+
+    <div style="margin:10px 0;">
+      <input id="tree-input" type="text" placeholder="Node value…" />
+      <button id="tree-add-root">Add Root</button>
+      <button id="tree-add-child">Add Child</button>
+    </div>
+
+    <div id="tree-display" style="padding:10px;border:1px solid #ccc;">
+      <svg id="tree-svg" width="1000" height="600"></svg>
+    </div>
+  </article>
+
+  <!-- BINARY TREE DEMO -->
+  <article class="post-card">
+    <header>
+      <h3 class="post-title">Binary Tree Demo</h3>
+      <p class="post-caption">Insert nodes left or right.</p>
+    </header>
+
+    <div style="margin:10px 0;">
+      <input id="bt-input" type="text" placeholder="Value…" />
+      <button id="bt-add-left">Add Left</button>
+      <button id="bt-add-right">Add Right</button>
+      <button id="bt-reset">Reset</button>
+    </div>
+
+    <div id="bt-display" style="padding:10px;border:1px solid #ccc;">
+      <svg id="bt-svg" width="1000" height="600"></svg>
+    </div>
+  </article>
+
+  <!-- BST DEMO -->
+  <article class="post-card">
+    <header>
+      <h3 class="post-title">BST Demo</h3>
+      <p class="post-caption">Insert values into a Binary Search Tree.</p>
+    </header>
+
+    <div style="margin:10px 0;">
+      <input id="bst-input" type="text" placeholder="Insert value…" />
+      <button id="bst-insert">Insert</button>
+      <button id="bst-reset">Reset</button>
+    </div>
+
+    <div id="bst-display" style="padding:10px;border:1px solid #ccc;">
+      <svg id="bst-svg" width="1000" height="600"></svg>
+    </div>
+  </article>
+
+  <!-- ========================= -->
+  <!-- REGULAR POSTS             -->
+  <!-- ========================= -->
+  {% for post in posts %}
+    {% if post.id > 0 %}
+      <article class="post-card" data-id="{{ post.id }}">
+        <div class="three-dots" data-id="{{ post.id }}">⋯</div>
+        <div class="dropdown-menu" id="menu-{{ post.id }}">
+          <button class="edit-post" data-id="{{ post.id }}" data-title="{{ post.title }}" data-caption="{{ post.caption }}" data-author="{{ post.author }}">✏️ Edit</button>
+          <button class="delete-post" onclick="deletePost({{ post.id }})">🗑️ Delete</button>
+        </div>
+
+        <header>
+          <h3 class="post-title">{{ post.title }}</h3>
+          <p class="post-caption preserve">{{ post.caption }}</p>
+        </header>
+        <footer>
+          <button class="vote-up" data-id="{{ post.id }}">▲ <span class="count">{{ post.up }}</span></button>
+          <button class="vote-down" data-id="{{ post.id }}">▼ <span class="count">{{ post.down }}</span></button>
+        </footer>
+      </article>
+    {% endif %}
+  {% endfor %}
+
+</section>
+
+
+<!-- ===================================== -->
+<!-- POST MODAL (CREATE + EDIT)            -->
+<!-- ===================================== -->
+<div id="create-post-modal" class="modal" role="dialog" aria-hidden="true">
+  <div class="modal-content">
+    <h2 id="modal-title">Create a Post</h2>
+
+    <form id="post-form" method="POST" action="{{ url_for('create_post') }}">
+      <input type="hidden" id="post-id" name="id" value="">
+
+      <label>Title:</label>
+      <input type="text" id="post-title-input" name="title" required>
+
+      <label>Caption:</label>
+      <textarea id="post-caption-input" name="caption" required></textarea>
+
+      <label>Author:</label>
+      <input type="text" id="post-author-input" name="author" required>
+
+      <label>Post Type:</label>
+      <select name="post_type" class="btn btn-ghost" style="margin-top: 8px;">
+        <option value="regular">Regular</option>
+      </select>
+
+      <div style="margin-top:10px;">
+        <button type="submit" class="btn btn-primary" name="save">Save</button>
+        <button type="button" class="btn btn-ghost" id="post-cancel" name="cancel">Cancel</button>
+      </div>
+    </form>
+  </div>
+</div>
+<div id="snackbar" class="snackbar" style="display:none;">
+  Deleting in 5 seconds...
+  <button onclick="cancelDelete()">Cancel</button>
+</div>
+
+<!-- ===================================== -->
+<!-- JAVASCRIPT FIXED                      -->
+<!-- ===================================== -->
+<script>
+/* ----------------------------- */
+/* Element refs                 */
+/* ----------------------------- */
+const createPostBtn = document.getElementById('btn-create-post');
+const createPostModal = document.getElementById('create-post-modal');
+const cancelPostBtn = document.getElementById('post-cancel');
+const modalTitle = document.getElementById('modal-title');
+const postForm = document.getElementById('post-form');
+const postIdInput = document.getElementById('post-id');
+const postTitleInput = document.getElementById('post-title-input');
+const postCaptionInput = document.getElementById('post-caption-input');
+const postAuthorInput = document.getElementById('post-author-input');
+
+/* ----------------------------- */
+/* Modal Actions                 */
+/* ----------------------------- */
+createPostBtn.addEventListener('click', () => {
+  modalTitle.innerText = "Create a Post";
+  postForm.action = "{{ url_for('create_post') }}";
+  postIdInput.value = "";
+  postTitleInput.value = "";
+  postCaptionInput.value = "";
+  postAuthorInput.value = "";
+  createPostModal.style.display = "flex";
+});
+
+cancelPostBtn.addEventListener('click', () => {
+  createPostModal.style.display = "none";
+});
+
+window.addEventListener('click', (e) => {
+  if (e.target === createPostModal) createPostModal.style.display = "none";
+});
+
+/* ----------------------------- */
+/* Dropdown menu                */
+/* ----------------------------- */
+document.addEventListener('click', (e) => {
+  const dots = e.target.closest('.three-dots');
+  const insideMenu = e.target.closest('.dropdown-menu');
+
+  if (dots) {
+    const id = dots.dataset.id;
+    const menu = document.getElementById(`menu-${id}`);
+    document.querySelectorAll('.dropdown-menu').forEach(m => {
+      if (m !== menu) m.style.display = 'none';
+    });
+    menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
+    return;
+  }
+
+  if (!insideMenu) {
+    document.querySelectorAll('.dropdown-menu').forEach(m => m.style.display = 'none');
+  }
+});
+
+/* ----------------------------- */
+/* Edit post                    */
+/* ----------------------------- */
+document.querySelectorAll('.edit-post').forEach(btn => {
+  btn.addEventListener('click', () => {
+    modalTitle.innerText = "Edit Post";
+    postForm.action = `/edit/${btn.dataset.id}`;
+    postIdInput.value = btn.dataset.id;
+    postTitleInput.value = btn.dataset.title;
+    postCaptionInput.value = btn.dataset.caption;
+    postAuthorInput.value = btn.dataset.author;
+    createPostModal.style.display = "flex";
+  });
+});
+
+
+</script>
+
+{% endblock %}

@@ -1,0 +1,148 @@
+{% extends "base.html" %}
+{% block title %}DSAWebLectures{% endblock %}
+
+{% block styles %}
+<style>
+  #bg-grid {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    display: grid;
+    transform: translate(-50%, -50%);
+    z-index: -10;
+    pointer-events: none;
+  }
+
+  .grid-cell {
+    width: 30px;
+    height: 30px;
+    background: #0a1a3a;
+    transition: background 0.12s linear;
+  }
+
+  .grid-cell.active {
+    background: #1e90ff;
+  }
+
+  @keyframes cellPulse {
+    0% { background: #1e90ff; }
+    100% { background: #0a1a3a; }
+  }
+
+  .grid-cell.pulse {
+    animation: cellPulse 0.4s forwards;
+  }
+</style>
+{% endblock styles %}
+{% block content %}
+<div id="bg-grid"></div>
+
+<div class="homepage-wrapper">
+  <section id="welcome-section">
+    <h1>Welcome to <span class="accent">DSALectures</span></h1>
+    <small>subject to change</small>
+  </section>
+
+  <div id="feed-scroll"></div>
+
+  <div class="chat-input-bar">
+    <input id="home-search" type="text" placeholder="Ask or search..." />
+    <button class="chat-send-btn" id="chat-send">Send</button>
+  </div>
+</div>
+{% endblock content %}
+
+{% block scripts %}
+<script>
+const searchBar = document.getElementById("home-search");
+const feed = document.getElementById("feed-scroll");
+const welcome = document.getElementById("welcome-section");
+const sendBtn = document.getElementById("chat-send");
+
+function displayResults(data) {
+  feed.innerHTML = "";
+  welcome.style.display = "none";
+
+  if (!data || data.length === 0) {
+    feed.innerHTML = `<div class="ai-response">No posts found matching your search.</div>`;
+    return;
+  }
+
+  data.forEach(post => {
+    const bubble = document.createElement("div");
+    bubble.className = "ai-response";
+    bubble.innerHTML = `<strong>${post.title}</strong><br><span class="preserve">${post.caption}</span>`;
+    feed.appendChild(bubble);
+  });
+
+  feed.scrollTop = feed.scrollHeight;
+}
+
+function performSearch() {
+  const query = searchBar.value.trim();
+  if (query === "") return;
+
+  fetch(`/search_posts?q=${encodeURIComponent(query)}`)
+    .then(res => res.json())
+    .then(displayResults)
+    .catch(() => feed.innerHTML = `<div class="ai-response">Error searching posts.</div>`);
+}
+
+searchBar.addEventListener("keydown", e => {
+  if (e.key === "Enter") performSearch();
+});
+sendBtn.addEventListener("click", performSearch);
+
+
+// GRID BACKGROUND EFFECT
+document.addEventListener("DOMContentLoaded", () => {
+  const grid = document.getElementById("bg-grid");
+  const cellSize = 30;
+
+  function createGrid() {
+    grid.innerHTML = "";
+    const cols = Math.ceil(window.innerWidth / cellSize) + 2;
+    const rows = Math.ceil(window.innerHeight / cellSize) + 2;
+
+    grid.style.gridTemplateColumns = `repeat(${cols}, ${cellSize}px)`;
+    grid.style.width = `${cols * cellSize}px`;
+    grid.style.height = `${rows * cellSize}px`;
+
+    const total = cols * rows;
+    for (let i = 0; i < total; i++) {
+      const cell = document.createElement("div");
+      cell.classList.add("grid-cell");
+      grid.appendChild(cell);
+    }
+
+    return { cols, rows, cells: Array.from(grid.children) };
+  }
+
+  let { cols, rows, cells } = createGrid();
+
+  function pulseCell(col, row) {
+    if (col < 0 || row < 0 || col >= cols || row >= rows) return;
+    const idx = row * cols + col;
+    const cell = cells[idx];
+    if (!cell) return;
+    cell.classList.add("active", "pulse");
+    setTimeout(() => cell.classList.remove("active"), 120);
+    setTimeout(() => cell.classList.remove("pulse"), 400);
+  }
+
+  window.addEventListener("mousemove", e => {
+    const rect = grid.getBoundingClientRect();
+    const col = Math.floor((e.clientX - rect.left) / cellSize);
+    const row = Math.floor((e.clientY - rect.top) / cellSize);
+
+    for (let dx = -1; dx <= 1; dx++)
+      for (let dy = -1; dy <= 1; dy++)
+        pulseCell(col + dx, row + dy);
+  });
+
+  window.addEventListener("resize", () => {
+    ({ cols, rows, cells } = createGrid());
+  });
+});
+</script>
+{% endblock scripts %}
